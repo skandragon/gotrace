@@ -31,6 +31,11 @@ func (v Vector3) Length() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }
 
+// LengthSquared returns the length*length of the vector.
+func (v Vector3) LengthSquared() float64 {
+	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
+}
+
 // Dot will calculate the dot product of this vector to "o"
 func (v Vector3) Dot(o Vector3) float64 {
 	return v.X*o.X + v.Y*o.Y + v.Z*o.Z

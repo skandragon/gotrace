@@ -38,12 +38,20 @@ var world = World{
 
 // Cast returns the color of a point, using the vector to define
 // where it is cast into the scene.
-func (r Ray) Cast() Vector3 {
+func (r Ray) Cast(tMin float64, tMax float64) Vector3 {
 
+	var closestHit *HitRecord
+	smallestDistance := tMax
 	for _, obj := range world.Objects {
-		if hit, color := obj.Hit(r); hit {
-			return color
+		if hitRecord := obj.Hit(r, tMin, smallestDistance); hitRecord != nil {
+			if closestHit == nil || closestHit.T > hitRecord.T {
+				smallestDistance = hitRecord.T
+				closestHit = hitRecord
+			}
 		}
+	}
+	if closestHit != nil {
+		return Vector3{1, 0.2, 0.1}
 	}
 
 	// make unit vector so y is between -1.0 and 1.0

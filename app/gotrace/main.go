@@ -61,7 +61,7 @@ func main() {
 			// direction = lowerLeft + (u * horizontal) + (v * vertical)
 			direction := lowerLeft.Add(position)
 
-			rgb := Ray{origin, direction}.Cast()
+			rgb := Ray{origin, direction}.Cast(0, 10000)
 
 			color := rgb.MultiplyScalar(colorMax)
 

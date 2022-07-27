@@ -16,8 +16,27 @@
 
 package main
 
+// HitRecord is returned when an object is hit.
+type HitRecord struct {
+	P         Vector3
+	Normal    Vector3
+	T         float64
+	FrontFace bool
+}
+
+// SetFaceNormal will calculate the proper values for Normal and
+// FrontFace.
+func (hr HitRecord) SetFaceNormal(r Ray, outwardNormal Vector3) {
+	hr.FrontFace = r.Direction.Dot(outwardNormal) < 0
+	if hr.FrontFace {
+		hr.Normal = outwardNormal
+	} else {
+		hr.Normal = outwardNormal.MultiplyScalar(-1)
+	}
+}
+
 // Object defines a world object that we can throw a ray at, and
 // find out what color it should be.
 type Object interface {
-	Hit(r Ray) (bool, Vector3)
+	Hit(r Ray, tMin float64, tMax float64) *HitRecord
 }

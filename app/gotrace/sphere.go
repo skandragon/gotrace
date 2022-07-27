@@ -16,6 +16,8 @@
 
 package main
 
+import "math"
+
 // Sphere defines a sphere.
 type Sphere struct {
 	Center Vector3
@@ -23,16 +25,29 @@ type Sphere struct {
 }
 
 // Hit calculates the hit of a sphere.
-func (s Sphere) Hit(r Ray) (hit bool, color Vector3) {
+func (s Sphere) Hit(r Ray, tMin float64, tMax float64) *HitRecord {
 	oc := r.Origin.Subtract(s.Center)
-	a := r.Direction.Dot(r.Direction)
-	b := 2.0 * oc.Dot(r.Direction)
-	c := oc.Dot(oc) - s.Radius*s.Radius
-	discriminant := b*b - 4*a*c
+	a := r.Direction.LengthSquared()
+	bHalf := oc.Dot(r.Direction)
+	c := oc.LengthSquared() - s.Radius*s.Radius
+	discriminant := bHalf*bHalf - a*c
 
-	hit = discriminant > 0
-	if hit {
-		color = Vector3{0.1, 0.6, 0.6}
+	if discriminant < 0 {
+		return nil
 	}
-	return
+	sqrtd := math.Sqrt(discriminant)
+
+	root := (-bHalf - sqrtd) / a
+	if root < tMin || root > tMax {
+		root = (-bHalf + sqrtd) / a
+	}
+	if root < tMin || root > tMax {
+		return nil
+	}
+
+	hitPoint := r.Point(root)
+	outwardNormal := hitPoint.Subtract(s.Center).DivideScalar(s.Radius)
+	hr := &HitRecord{T: root, P: hitPoint}
+	hr.SetFaceNormal(r, outwardNormal)
+	return hr
 }
