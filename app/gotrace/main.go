@@ -47,20 +47,24 @@ var (
 	materialCenter = NewLamtertianMaterial(Vector3{0.7, 0.3, 0.3})
 	materialLeft   = NewReflectiveMaterial(Vector3{0.8, 0.8, 0.8}, 0.3)
 	materialRight  = NewReflectiveMaterial(Vector3{0.8, 0.6, 0.2}, 1.0)
-)
+	materialGlass  = NewDielectricMaterial(1.5)
 
-var world = &World{
-	TMin:     0.001,
-	TMax:     math.MaxFloat64,
-	MaxDepth: 50,
-	Lights:   []Light{},
-	Objects: []Object{
-		Sphere{Vector3{0, 0, -1}, 0.5, materialCenter},
-		Sphere{Vector3{0, -100.5, -1}, 100, materialGround},
-		Sphere{Vector3{-1, 0, -1}, 0.5, materialLeft},
-		Sphere{Vector3{1, 0, -1}, 0.5, materialRight},
-	},
-}
+	r = math.Cos(math.Pi / 4)
+
+	world = &World{
+		TMin:     0.001,
+		TMax:     math.MaxFloat64,
+		MaxDepth: 50,
+		Lights:   []Light{},
+		Objects: []Object{
+			//Sphere{Vector3{0, 0, -1}, 0.5, materialCenter},
+			Sphere{Vector3{0, -100.5, -1}, 100, materialGround},
+			Sphere{Vector3{-r, 0, -1}, r, materialLeft},
+			//Sphere{Vector3{1, 0, -1}, 0.25, materialRight},
+			Sphere{Vector3{r, 0, -1}, r, materialGlass},
+		},
+	}
+)
 
 type processedLine struct {
 	y      int
@@ -115,11 +119,11 @@ func renderLine(camera Camera, work workItem, c chan processedLine) {
 
 func main() {
 	aspectRatio := 16.0 / 9.0
-	imageWidth := 1200
+	imageWidth := 400
 	imageHeight := int(float64(imageWidth) / aspectRatio)
 	samplesPerPixel := 50
 
-	camera := NewCamera(aspectRatio)
+	camera := NewCamera(90, aspectRatio)
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 

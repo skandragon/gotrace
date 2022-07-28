@@ -16,6 +16,8 @@
 
 package main
 
+import "math"
+
 // Camera defines how we see the world.
 type Camera struct {
 	ViewportHeight  float64
@@ -29,12 +31,16 @@ type Camera struct {
 
 // NewCamera returns a new Camera with the given aspect ratio.
 // Other things are hard-coded currently.
-func NewCamera(aspectRatio float64) Camera {
+func NewCamera(fieldOfView float64, aspectRatio float64) Camera {
 	ret := Camera{
-		ViewportHeight: 2.0,
-		FocalLength:    1.0,
-		origin:         Vector3{0, 0, 0},
+		FocalLength: 1.0,
+		origin:      Vector3{0, 0, 0},
 	}
+
+	theta := fieldOfView * math.Pi / 180.0
+	h := math.Tan(theta / 2)
+	ret.ViewportHeight = 2.0 * h
+
 	ret.ViewportWidth = ret.ViewportHeight * aspectRatio
 	ret.horizontal = Vector3{ret.ViewportWidth, 0, 0}
 	ret.vertical = Vector3{0, ret.ViewportHeight, 0}
