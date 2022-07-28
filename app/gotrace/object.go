@@ -26,7 +26,7 @@ type HitRecord struct {
 
 // SetFaceNormal will calculate the proper values for Normal and
 // FrontFace.
-func (hr HitRecord) SetFaceNormal(r Ray, outwardNormal Vector3) {
+func (hr *HitRecord) SetFaceNormal(r Ray, outwardNormal Vector3) {
 	hr.FrontFace = r.Direction.Dot(outwardNormal) < 0
 	if hr.FrontFace {
 		hr.Normal = outwardNormal
@@ -39,4 +39,5 @@ func (hr HitRecord) SetFaceNormal(r Ray, outwardNormal Vector3) {
 // find out what color it should be.
 type Object interface {
 	Hit(r Ray, tMin float64, tMax float64) *HitRecord
+	ColorAt(hr *HitRecord) Vector3
 }

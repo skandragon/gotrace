@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"math"
+	"math/rand"
 	"os"
 )
 
@@ -30,46 +32,51 @@ func check(e error, s string) {
 	}
 }
 
-const colorMax = 255.99
+func setPixel(im *image.RGBA, samples int, x int, y int, color Vector3) {
+	pixelColor := color.
+		DivideScalar(float64(samples)).
+		Gamma2().
+		Clamp(0, 0.999).
+		MultiplyScalar(256)
+
+	pixelOffset := (im.Rect.Dy()-y-1)*im.Stride + x*4
+	im.Pix[pixelOffset] = uint8(pixelColor.X)
+	im.Pix[pixelOffset+1] = uint8(pixelColor.Y)
+	im.Pix[pixelOffset+2] = uint8(pixelColor.Z)
+	im.Pix[pixelOffset+3] = 0xff
+}
+
+var world = &World{
+	TMin:     0.001,
+	TMax:     math.MaxFloat64,
+	MaxDepth: 50,
+	Lights:   []Light{},
+	Objects: []Object{
+		Sphere{Center: Vector3{0, 0, -1}, Radius: 0.5, Color: Vector3{1, 1, 1}},
+		Sphere{Center: Vector3{0, -100.5, -1}, Radius: 100, Color: Vector3{1, 1, 1}},
+	},
+}
 
 func main() {
 	aspectRatio := 16.0 / 9.0
 	imageWidth := 400
 	imageHeight := int(float64(imageWidth) / aspectRatio)
+	samplesPerPixel := 100
 
-	viewportHeight := 2.0
-	viewportWidth := viewportHeight * aspectRatio
-	focalLength := 1.0
-
-	origin := Vector3{0.0, 0.0, 0.0}
-	horizontal := Vector3{viewportWidth, 0.0, 0.0}
-	vertical := Vector3{0.0, viewportHeight, 0.0}
-	lowerLeft := origin.
-		Subtract(horizontal.DivideScalar(2)).
-		Subtract(vertical.DivideScalar(2)).
-		Subtract(Vector3{0, 0, focalLength})
+	camera := NewCamera(aspectRatio)
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
 	for j := 0; j < imageHeight; j++ {
-		v := float64(j) / float64(imageHeight-1)
 		for i := 0; i < imageWidth; i++ {
-			u := float64(i) / float64(imageWidth-1)
-
-			position := horizontal.MultiplyScalar(u).Add(vertical.MultiplyScalar(v))
-
-			// direction = lowerLeft + (u * horizontal) + (v * vertical)
-			direction := lowerLeft.Add(position)
-
-			rgb := Ray{origin, direction}.Cast(0, 10000)
-
-			color := rgb.MultiplyScalar(colorMax)
-
-			pixelOffset := (imageHeight-j-1)*im.Stride + i*4
-			im.Pix[pixelOffset] = uint8(color.X)
-			im.Pix[pixelOffset+1] = uint8(color.Y)
-			im.Pix[pixelOffset+2] = uint8(color.Z)
-			im.Pix[pixelOffset+3] = 0xff
+			rgb := &Vector3{}
+			for s := 0; s < samplesPerPixel; s++ {
+				v := (float64(j) + rand.Float64()) / float64(imageHeight-1)
+				u := (float64(i) + rand.Float64()) / float64(imageWidth-1)
+				ray := camera.GetRay(u, v)
+				rgb.AddAccum(world.Cast(ray, world.MaxDepth))
+			}
+			setPixel(im, samplesPerPixel, i, j, *rgb)
 		}
 	}
 
