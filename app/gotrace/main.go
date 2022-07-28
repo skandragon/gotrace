@@ -24,6 +24,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"runtime"
 	"sync"
 )
 
@@ -60,7 +61,7 @@ var (
 		Camera:   NewCamera(lookFrom, lookAt, vup, 20, aspectRatio, 0.1, 10),
 		TMin:     0.001,
 		TMax:     math.MaxFloat64,
-		MaxDepth: 50,
+		MaxDepth: 500,
 		Objects:  makeObjects(),
 	}
 )
@@ -122,6 +123,7 @@ type workItem struct {
 
 func absorbLines(im *image.RGBA, samples int, c chan processedLine) {
 	for line := range c {
+		log.Printf("Line %d of %d", line.y, imageHeight)
 		for x, color := range line.colors {
 			setPixel(im, samples, x, line.y, color)
 		}
@@ -160,6 +162,9 @@ func renderLine(world *World, work workItem, c chan processedLine) {
 }
 
 func main() {
+	log.Println("Version", runtime.Version())
+	log.Println("NumCPU", runtime.NumCPU())
+	log.Println("GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
