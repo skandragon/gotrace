@@ -164,14 +164,13 @@ func renderLine(world *World, work workItem, c chan processedLine) {
 func main() {
 	log.Println("Version", runtime.Version())
 	log.Println("NumCPU", runtime.NumCPU())
-	log.Println("GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
 	resultChan := make(chan processedLine)
 	workChan := make(chan workItem, imageHeight)
 	wg := sync.WaitGroup{}
-	for i := 0; i < 1; i++ {
+	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
 		go worker(i, world, &wg, workChan, resultChan)
 	}
