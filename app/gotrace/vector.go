@@ -66,6 +66,15 @@ func (v Vector3) Dot(o Vector3) float64 {
 	return v.X*o.X + v.Y*o.Y + v.Z*o.Z
 }
 
+// Cross returns v cross-product o.
+func (v Vector3) Cross(o Vector3) Vector3 {
+	return Vector3{
+		X: v.Y*o.Z - v.Z*o.Y,
+		Y: v.Z*o.X - v.X*o.Z,
+		Z: v.X*o.Y - v.Y*o.X,
+	}
+}
+
 // Normalize returns the unit vector with the same direction
 // as this vector.
 func (v Vector3) Normalize() Vector3 {
@@ -150,6 +159,21 @@ func RandomUnitSphere() Vector3 {
 		}
 		if p.LengthSquared() < 1 {
 			return p.Normalize()
+		}
+	}
+}
+
+// RandomUnitDisk returns a random vector that is constrained by a disk.  That is,
+// Z = 0 for all.
+func RandomUnitDisk() Vector3 {
+	for {
+		p := Vector3{
+			X: rand.Float64()*2 - 1.0,
+			Y: rand.Float64()*2 - 1.0,
+			Z: 0,
+		}
+		if p.LengthSquared() < 1 {
+			return p
 		}
 	}
 }

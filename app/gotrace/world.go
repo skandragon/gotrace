@@ -18,6 +18,7 @@ package main
 
 // World defines our massive world.
 type World struct {
+	Camera   Camera
 	Objects  []Object
 	Lights   []Light
 	MaxDepth int

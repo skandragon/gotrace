@@ -42,7 +42,18 @@ func setPixel(im *image.RGBA, samples int, x int, y int, color Vector3) {
 	im.Pix[pixelOffset+3] = 0xff
 }
 
+const (
+	aspectRatio     = 16.0 / 9.0
+	imageWidth      = 400
+	imageHeight     = int(float64(imageWidth) / aspectRatio)
+	samplesPerPixel = 50
+)
+
 var (
+	lookFrom = Vector3{3, 3, 2}
+	lookAt   = Vector3{0, 0, -1}
+	vup      = Vector3{0, 1, 0}
+
 	materialGround = NewLamtertianMaterial(Vector3{0.8, 0.8, 0})
 	materialCenter = NewLamtertianMaterial(Vector3{0.7, 0.3, 0.3})
 	materialLeft   = NewReflectiveMaterial(Vector3{0.8, 0.8, 0.8}, 0.3)
@@ -52,6 +63,15 @@ var (
 	r = math.Cos(math.Pi / 4)
 
 	world = &World{
+		Camera: NewCamera(
+			lookFrom,
+			lookAt,
+			vup,
+			20,
+			aspectRatio,
+			2.0,
+			(lookFrom.Subtract(lookAt).Length()),
+		),
 		TMin:     0.001,
 		TMax:     math.MaxFloat64,
 		MaxDepth: 50,
@@ -86,24 +106,24 @@ func absorbLines(im *image.RGBA, samples int, c chan processedLine) {
 	}
 }
 
-func worker(workerID int, camera Camera, wg *sync.WaitGroup, w chan workItem, c chan processedLine) {
+func worker(workerID int, world *World, wg *sync.WaitGroup, w chan workItem, c chan processedLine) {
 	defer wg.Done()
 	log.Printf("Worker %d starting...", workerID)
 
 	for work := range w {
-		renderLine(camera, work, c)
+		renderLine(world, work, c)
 	}
 	log.Printf("Worker %d ended.", workerID)
 }
 
-func renderLine(camera Camera, work workItem, c chan processedLine) {
+func renderLine(world *World, work workItem, c chan processedLine) {
 	colors := make([]Vector3, 0, work.imageWidth)
 	for i := 0; i < work.imageWidth; i++ {
 		rgb := &Vector3{}
 		for s := 0; s < work.samplesPerPixel; s++ {
 			v := (float64(work.y) + rand.Float64()) / float64(work.imageHeight-1)
 			u := (float64(i) + rand.Float64()) / float64(work.imageWidth-1)
-			ray := camera.GetRay(u, v)
+			ray := world.Camera.GetRay(u, v)
 			rgb.AddAccum(world.Cast(ray, world.MaxDepth))
 		}
 		pixelColor := rgb.
@@ -118,12 +138,6 @@ func renderLine(camera Camera, work workItem, c chan processedLine) {
 }
 
 func main() {
-	aspectRatio := 16.0 / 9.0
-	imageWidth := 400
-	imageHeight := int(float64(imageWidth) / aspectRatio)
-	samplesPerPixel := 50
-
-	camera := NewCamera(90, aspectRatio)
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
@@ -132,7 +146,7 @@ func main() {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 1; i++ {
 		wg.Add(1)
-		go worker(i, camera, &wg, workChan, resultChan)
+		go worker(i, world, &wg, workChan, resultChan)
 	}
 
 	go absorbLines(im, samplesPerPixel, resultChan)

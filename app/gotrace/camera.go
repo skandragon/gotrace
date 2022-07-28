@@ -23,40 +23,50 @@ type Camera struct {
 	ViewportHeight  float64
 	ViewportWidth   float64
 	FocalLength     float64
+	LensRadius      float64
 	origin          Vector3
 	lowerLeftCorner Vector3
 	horizontal      Vector3
 	vertical        Vector3
+	u, v, w         Vector3
 }
 
 // NewCamera returns a new Camera with the given aspect ratio.
 // Other things are hard-coded currently.
-func NewCamera(fieldOfView float64, aspectRatio float64) Camera {
+func NewCamera(lookFrom Vector3, lookAt Vector3, vup Vector3, fieldOfView float64, aspectRatio float64, aperture float64, focalLength float64) Camera {
 	ret := Camera{
-		FocalLength: 1.0,
-		origin:      Vector3{0, 0, 0},
+		FocalLength: focalLength,
+		LensRadius:  aperture / 2,
+		origin:      lookFrom,
 	}
 
 	theta := fieldOfView * math.Pi / 180.0
 	h := math.Tan(theta / 2)
 	ret.ViewportHeight = 2.0 * h
-
 	ret.ViewportWidth = ret.ViewportHeight * aspectRatio
-	ret.horizontal = Vector3{ret.ViewportWidth, 0, 0}
-	ret.vertical = Vector3{0, ret.ViewportHeight, 0}
+
+	ret.w = lookFrom.Subtract(lookAt).Normalize()
+	ret.u = vup.Cross(ret.w).Normalize()
+	ret.v = ret.w.Cross(ret.u)
+
+	ret.horizontal = ret.u.MultiplyScalar(ret.ViewportWidth * ret.FocalLength)
+	ret.vertical = ret.v.MultiplyScalar(ret.ViewportHeight * ret.FocalLength)
 	ret.lowerLeftCorner = ret.origin.
 		Subtract(ret.horizontal.DivideScalar(2)).
 		Subtract(ret.vertical.DivideScalar(2)).
-		Subtract(Vector3{0, 0, ret.FocalLength})
+		Subtract(ret.w.MultiplyScalar(ret.FocalLength))
 	return ret
 }
 
 // GetRay returns a ray from the camera's origin, pointing in the
 // specified direction calculated by u, v.
-func (c Camera) GetRay(u, v float64) Ray {
+func (c Camera) GetRay(s float64, t float64) Ray {
+	rd := RandomUnitDisk().MultiplyScalar(c.LensRadius)
+	offset := c.u.MultiplyScalar(rd.X).Add(c.v.MultiplyScalar(rd.Y))
 	direction := c.lowerLeftCorner.
-		Add(c.horizontal.MultiplyScalar(u)).
-		Add(c.vertical.MultiplyScalar(v)).
-		Subtract(c.origin)
-	return Ray{Origin: c.origin, Direction: direction}
+		Add(c.horizontal.MultiplyScalar(s)).
+		Add(c.vertical.MultiplyScalar(t)).
+		Subtract(c.origin).
+		Subtract(offset)
+	return Ray{c.origin.Add(offset), direction}
 }
