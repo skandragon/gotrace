@@ -44,47 +44,69 @@ func setPixel(im *image.RGBA, samples int, x int, y int, color Vector3) {
 
 const (
 	aspectRatio     = 16.0 / 9.0
-	imageWidth      = 400
+	imageWidth      = 1200
 	imageHeight     = int(float64(imageWidth) / aspectRatio)
 	samplesPerPixel = 50
 )
 
 var (
-	lookFrom = Vector3{3, 3, 2}
-	lookAt   = Vector3{0, 0, -1}
+	lookFrom = Vector3{13, 2, 3}
+	lookAt   = Vector3{0, 0, 0}
 	vup      = Vector3{0, 1, 0}
-
-	materialGround = NewLamtertianMaterial(Vector3{0.8, 0.8, 0})
-	materialCenter = NewLamtertianMaterial(Vector3{0.7, 0.3, 0.3})
-	materialLeft   = NewReflectiveMaterial(Vector3{0.8, 0.8, 0.8}, 0.3)
-	materialRight  = NewReflectiveMaterial(Vector3{0.8, 0.6, 0.2}, 1.0)
-	materialGlass  = NewDielectricMaterial(1.5)
 
 	r = math.Cos(math.Pi / 4)
 
 	world = &World{
-		Camera: NewCamera(
-			lookFrom,
-			lookAt,
-			vup,
-			20,
-			aspectRatio,
-			2.0,
-			(lookFrom.Subtract(lookAt).Length()),
-		),
+		Camera:   NewCamera(lookFrom, lookAt, vup, 20, aspectRatio, 0.1, 10),
 		TMin:     0.001,
 		TMax:     math.MaxFloat64,
 		MaxDepth: 50,
-		Lights:   []Light{},
-		Objects: []Object{
-			//Sphere{Vector3{0, 0, -1}, 0.5, materialCenter},
-			Sphere{Vector3{0, -100.5, -1}, 100, materialGround},
-			Sphere{Vector3{-r, 0, -1}, r, materialLeft},
-			//Sphere{Vector3{1, 0, -1}, 0.25, materialRight},
-			Sphere{Vector3{r, 0, -1}, r, materialGlass},
-		},
+		Objects:  makeObjects(),
 	}
 )
+
+func makeObjects() []Object {
+	objects := []Object{}
+
+	materialGround := NewLamtertianMaterial(Vector3{0.5, 0.5, 0.5})
+	objects = append(objects, Sphere{Vector3{0, -1000, 0}, 1000, materialGround})
+
+	for a := -11; a < 11; a++ {
+		for b := -11; b < 11; b++ {
+			chooseMat := rand.Float64()
+			center := Vector3{
+				float64(a) + 0.9*rand.Float64(),
+				0.2,
+				float64(b) + 0.9*rand.Float64(),
+			}
+			if center.Subtract(Vector3{4, 0.2, 0}).Length() > 0.9 {
+				var sphereMaterial Material
+				if chooseMat < 0.8 {
+					albedo := RandomVector().Multiply(RandomVector())
+					sphereMaterial = NewLamtertianMaterial(albedo)
+				} else if chooseMat < 0.95 {
+					albedo := RandomVector().MultiplyScalar(0.5).AddScalar(0.5)
+					fuzz := rand.Float64() * 0.5
+					sphereMaterial = NewReflectiveMaterial(albedo, fuzz)
+				} else {
+					sphereMaterial = NewDielectricMaterial(1.5)
+				}
+				objects = append(objects, Sphere{center, 0.2, sphereMaterial})
+			}
+		}
+	}
+
+	material1 := NewDielectricMaterial(1.5)
+	objects = append(objects, Sphere{Vector3{0, 1, 0}, 1.0, material1})
+
+	material2 := NewLamtertianMaterial(Vector3{0.4, 0.2, 0.1})
+	objects = append(objects, Sphere{Vector3{-4, 1, 0}, 1.0, material2})
+
+	material3 := NewReflectiveMaterial(Vector3{0.7, 0.6, 0.5}, 0.0)
+	objects = append(objects, Sphere{Vector3{4, 1, 0}, 1.0, material3})
+
+	return objects
+}
 
 type processedLine struct {
 	y      int

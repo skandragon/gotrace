@@ -20,7 +20,6 @@ package main
 type World struct {
 	Camera   Camera
 	Objects  []Object
-	Lights   []Light
 	MaxDepth int
 	TMin     float64
 	TMax     float64

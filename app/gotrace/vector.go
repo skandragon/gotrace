@@ -178,6 +178,15 @@ func RandomUnitDisk() Vector3 {
 	}
 }
 
+// RandomVector returns a random vector, which is not normalized.
+func RandomVector() Vector3 {
+	return Vector3{
+		X: rand.Float64()*2 - 1.0,
+		Y: rand.Float64()*2 - 1.0,
+		Z: rand.Float64()*2 - 1.0,
+	}
+}
+
 // NearZeroVector returns true if all elements are almost zero.
 func NearZeroVector(v Vector3) bool {
 	const s = 1e-8
