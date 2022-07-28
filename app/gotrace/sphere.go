@@ -22,9 +22,9 @@ import (
 
 // Sphere defines a sphere.
 type Sphere struct {
-	Center Vector3
-	Radius float64
-	Color  Vector3
+	Center   Vector3
+	Radius   float64
+	Material Material
 }
 
 // Hit calculates the hit of a sphere.
@@ -50,12 +50,7 @@ func (s Sphere) Hit(r Ray, tMin float64, tMax float64) *HitRecord {
 
 	hitPoint := r.Point(root)
 	outwardNormal := hitPoint.Subtract(s.Center).DivideScalar(s.Radius)
-	hr := &HitRecord{T: root, P: hitPoint}
+	hr := &HitRecord{T: root, P: hitPoint, Material: s.Material}
 	hr.SetFaceNormal(r, outwardNormal)
 	return hr
-}
-
-// ColorAt returns the color at a given hit point.
-func (s Sphere) ColorAt(hr *HitRecord) Vector3 {
-	return hr.Normal.Add(s.Color).MultiplyScalar(0.5)
 }

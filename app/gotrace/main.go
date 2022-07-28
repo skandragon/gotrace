@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"log"
 	"math"
 	"math/rand"
 	"os"
+	"sync"
 )
 
 func check(e error, s string) {
@@ -33,18 +35,19 @@ func check(e error, s string) {
 }
 
 func setPixel(im *image.RGBA, samples int, x int, y int, color Vector3) {
-	pixelColor := color.
-		DivideScalar(float64(samples)).
-		Gamma2().
-		Clamp(0, 0.999).
-		MultiplyScalar(256)
-
 	pixelOffset := (im.Rect.Dy()-y-1)*im.Stride + x*4
-	im.Pix[pixelOffset] = uint8(pixelColor.X)
-	im.Pix[pixelOffset+1] = uint8(pixelColor.Y)
-	im.Pix[pixelOffset+2] = uint8(pixelColor.Z)
+	im.Pix[pixelOffset] = uint8(color.X)
+	im.Pix[pixelOffset+1] = uint8(color.Y)
+	im.Pix[pixelOffset+2] = uint8(color.Z)
 	im.Pix[pixelOffset+3] = 0xff
 }
+
+var (
+	materialGround = NewLamtertianMaterial(Vector3{0.8, 0.8, 0})
+	materialCenter = NewLamtertianMaterial(Vector3{0.7, 0.3, 0.3})
+	materialLeft   = NewReflectiveMaterial(Vector3{0.8, 0.8, 0.8}, 0.3)
+	materialRight  = NewReflectiveMaterial(Vector3{0.8, 0.6, 0.2}, 1.0)
+)
 
 var world = &World{
 	TMin:     0.001,
@@ -52,33 +55,90 @@ var world = &World{
 	MaxDepth: 50,
 	Lights:   []Light{},
 	Objects: []Object{
-		Sphere{Center: Vector3{0, 0, -1}, Radius: 0.5, Color: Vector3{1, 1, 1}},
-		Sphere{Center: Vector3{0, -100.5, -1}, Radius: 100, Color: Vector3{1, 1, 1}},
+		Sphere{Vector3{0, 0, -1}, 0.5, materialCenter},
+		Sphere{Vector3{0, -100.5, -1}, 100, materialGround},
+		Sphere{Vector3{-1, 0, -1}, 0.5, materialLeft},
+		Sphere{Vector3{1, 0, -1}, 0.5, materialRight},
 	},
+}
+
+type processedLine struct {
+	y      int
+	colors []Vector3
+}
+
+type workItem struct {
+	y               int
+	imageHeight     int
+	imageWidth      int
+	samplesPerPixel int
+}
+
+func absorbLines(im *image.RGBA, samples int, c chan processedLine) {
+	for line := range c {
+		for x, color := range line.colors {
+			setPixel(im, samples, x, line.y, color)
+		}
+	}
+}
+
+func worker(workerID int, camera Camera, wg *sync.WaitGroup, w chan workItem, c chan processedLine) {
+	defer wg.Done()
+	log.Printf("Worker %d starting...", workerID)
+
+	for work := range w {
+		renderLine(camera, work, c)
+	}
+	log.Printf("Worker %d ended.", workerID)
+}
+
+func renderLine(camera Camera, work workItem, c chan processedLine) {
+	colors := make([]Vector3, 0, work.imageWidth)
+	for i := 0; i < work.imageWidth; i++ {
+		rgb := &Vector3{}
+		for s := 0; s < work.samplesPerPixel; s++ {
+			v := (float64(work.y) + rand.Float64()) / float64(work.imageHeight-1)
+			u := (float64(i) + rand.Float64()) / float64(work.imageWidth-1)
+			ray := camera.GetRay(u, v)
+			rgb.AddAccum(world.Cast(ray, world.MaxDepth))
+		}
+		pixelColor := rgb.
+			DivideScalar(float64(work.samplesPerPixel)).
+			Gamma2().
+			Clamp(0, 0.999).
+			MultiplyScalar(256)
+
+		colors = append(colors, pixelColor)
+	}
+	c <- processedLine{work.y, colors}
 }
 
 func main() {
 	aspectRatio := 16.0 / 9.0
-	imageWidth := 400
+	imageWidth := 1200
 	imageHeight := int(float64(imageWidth) / aspectRatio)
-	samplesPerPixel := 100
+	samplesPerPixel := 50
 
 	camera := NewCamera(aspectRatio)
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
-	for j := 0; j < imageHeight; j++ {
-		for i := 0; i < imageWidth; i++ {
-			rgb := &Vector3{}
-			for s := 0; s < samplesPerPixel; s++ {
-				v := (float64(j) + rand.Float64()) / float64(imageHeight-1)
-				u := (float64(i) + rand.Float64()) / float64(imageWidth-1)
-				ray := camera.GetRay(u, v)
-				rgb.AddAccum(world.Cast(ray, world.MaxDepth))
-			}
-			setPixel(im, samplesPerPixel, i, j, *rgb)
-		}
+	resultChan := make(chan processedLine)
+	workChan := make(chan workItem, imageHeight)
+	wg := sync.WaitGroup{}
+	for i := 0; i < 1; i++ {
+		wg.Add(1)
+		go worker(i, camera, &wg, workChan, resultChan)
 	}
+
+	go absorbLines(im, samplesPerPixel, resultChan)
+	for j := 0; j < imageHeight; j++ {
+		workChan <- workItem{j, imageHeight, imageWidth, samplesPerPixel}
+	}
+	close(workChan)
+	log.Printf("Waiting for workers to complete...")
+	wg.Wait()
+	close(resultChan)
 
 	out, err := os.Create("out.png")
 	check(err, "Error writing to file: %v\n")

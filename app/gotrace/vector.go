@@ -18,6 +18,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 
 	"golang.org/x/exp/constraints"
 )
@@ -92,6 +93,12 @@ func (v Vector3) Subtract(o Vector3) Vector3 {
 	return Vector3{v.X - o.X, v.Y - o.Y, v.Z - o.Z}
 }
 
+// Multiply will add two vectors together.  It will not modify
+// either the source or "o" vector.
+func (v Vector3) Multiply(o Vector3) Vector3 {
+	return Vector3{v.X * o.X, v.Y * o.Y, v.Z * o.Z}
+}
+
 // AddScalar adds the scalar component to each element of the
 // vector, and returns a new vector.
 // This is in effect a translation.
@@ -131,4 +138,24 @@ func (v Vector3) Lerp(o Vector3, t float64) Vector3 {
 // be a color.
 func (v Vector3) Gamma2() Vector3 {
 	return Vector3{math.Sqrt(v.X), math.Sqrt(v.Y), math.Sqrt(v.Z)}
+}
+
+// RandomUnitSphere returns a normalized, randomly created unit vector.
+func RandomUnitSphere() Vector3 {
+	for {
+		p := Vector3{
+			X: rand.Float64()*2 - 1.0,
+			Y: rand.Float64()*2 - 1.0,
+			Z: rand.Float64()*2 - 1.0,
+		}
+		if p.LengthSquared() < 1 {
+			return p.Normalize()
+		}
+	}
+}
+
+// NearZeroVector returns true if all elements are almost zero.
+func NearZeroVector(v Vector3) bool {
+	const s = 1e-8
+	return (math.Abs(v.X) < s) && (math.Abs(v.Y) < s) && (math.Abs(v.Z) < s)
 }

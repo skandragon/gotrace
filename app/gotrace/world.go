@@ -16,8 +16,6 @@
 
 package main
 
-import "math/rand"
-
 // World defines our massive world.
 type World struct {
 	Objects  []Object
@@ -25,19 +23,6 @@ type World struct {
 	MaxDepth int
 	TMin     float64
 	TMax     float64
-}
-
-func randomUnitSphere() Vector3 {
-	for {
-		p := Vector3{
-			X: rand.Float64()*2 - 1.0,
-			Y: rand.Float64()*2 - 1.0,
-			Z: rand.Float64()*2 - 1.0,
-		}
-		if p.LengthSquared() < 1 {
-			return p.Normalize()
-		}
-	}
 }
 
 // Cast returns the color of a point, using the vector to define
@@ -59,9 +44,10 @@ func (w World) Cast(r Ray, depth int) Vector3 {
 		}
 	}
 	if closestHit != nil {
-		target := closestHit.P.Add(closestHit.Normal).Add(randomUnitSphere())
-		newRay := Ray{Origin: closestHit.P, Direction: target.Subtract(closestHit.P)}
-		return world.Cast(newRay, depth-1).MultiplyScalar(0.5)
+		if propagate, scatteredRay, attentuation := closestHit.Material.Scatter(r, closestHit); propagate {
+			return attentuation.Multiply(world.Cast(scatteredRay, depth-1))
+		}
+		return Vector3{}
 	}
 
 	// make unit vector so y is between -1.0 and 1.0
