@@ -31,57 +31,6 @@ type Vector3 struct {
 	Z float64
 }
 
-func clamp[T constraints.Ordered](x, min, max T) T {
-	if x < min {
-		return min
-	}
-	if x > max {
-		return max
-	}
-	return x
-}
-
-// Clamp will ensure that the vector components are within the
-// provided bounds.
-func (v Vector3) Clamp(min, max float64) Vector3 {
-	return Vector3{
-		X: clamp(v.X, min, max),
-		Y: clamp(v.Y, min, max),
-		Z: clamp(v.Z, min, max),
-	}
-}
-
-// Length returns the length of the vector.
-func (v Vector3) Length() float64 {
-	return math.Sqrt(v.LengthSquared())
-}
-
-// LengthSquared returns the length*length of the vector.
-func (v Vector3) LengthSquared() float64 {
-	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
-}
-
-// Dot will calculate the dot product of this vector to "o"
-func (v Vector3) Dot(o Vector3) float64 {
-	return v.X*o.X + v.Y*o.Y + v.Z*o.Z
-}
-
-// Cross returns v cross-product o.
-func (v Vector3) Cross(o Vector3) Vector3 {
-	return Vector3{
-		X: v.Y*o.Z - v.Z*o.Y,
-		Y: v.Z*o.X - v.X*o.Z,
-		Z: v.X*o.Y - v.Y*o.X,
-	}
-}
-
-// Normalize returns the unit vector with the same direction
-// as this vector.
-func (v Vector3) Normalize() Vector3 {
-	l := 1 / v.Length()
-	return Vector3{v.X * l, v.Y * l, v.Z * l}
-}
-
 // Add will add two vectors together.  It will not modify
 // either the source or "o" vector.
 func (v Vector3) Add(o Vector3) Vector3 {
@@ -133,6 +82,57 @@ func (v Vector3) Lerp(o Vector3, t float64) Vector3 {
 		Y: v.Y*(1.0-t) + o.Y*t,
 		Z: v.Z*(1.0-t) + o.Z*t,
 	}
+}
+
+func clamp[T constraints.Ordered](x, min, max T) T {
+	if x < min {
+		return min
+	}
+	if x > max {
+		return max
+	}
+	return x
+}
+
+// Clamp will ensure that the vector components are within the
+// provided bounds.
+func (v Vector3) Clamp(min, max float64) Vector3 {
+	return Vector3{
+		X: clamp(v.X, min, max),
+		Y: clamp(v.Y, min, max),
+		Z: clamp(v.Z, min, max),
+	}
+}
+
+// Length returns the length of the vector.
+func (v Vector3) Length() float64 {
+	return math.Sqrt(v.LengthSquared())
+}
+
+// LengthSquared returns the length*length of the vector.
+func (v Vector3) LengthSquared() float64 {
+	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
+}
+
+// Dot will calculate the dot product of this vector to "o"
+func (v Vector3) Dot(o Vector3) float64 {
+	return v.X*o.X + v.Y*o.Y + v.Z*o.Z
+}
+
+// Cross returns v cross-product o.
+func (v Vector3) Cross(o Vector3) Vector3 {
+	return Vector3{
+		X: v.Y*o.Z - v.Z*o.Y,
+		Y: v.Z*o.X - v.X*o.Z,
+		Z: v.X*o.Y - v.Y*o.X,
+	}
+}
+
+// Normalize returns the unit vector with the same direction
+// as this vector.
+func (v Vector3) Normalize() Vector3 {
+	l := 1 / v.Length()
+	return Vector3{v.X * l, v.Y * l, v.Z * l}
 }
 
 // Gamma2 applies a sqrt mod to the vector, which is assumed to
