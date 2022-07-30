@@ -88,14 +88,6 @@ func (v Vector3) Add(o Vector3) Vector3 {
 	return Vector3{v.X + o.X, v.Y + o.Y, v.Z + o.Z}
 }
 
-// AddAccum will add directly into "v"
-func (v *Vector3) AddAccum(o Vector3) *Vector3 {
-	v.X += o.X
-	v.Y += o.Y
-	v.Z += o.Z
-	return v
-}
-
 // Subtract will subtrace "o" from this vector, and return
 // a new vector.
 func (v Vector3) Subtract(o Vector3) Vector3 {

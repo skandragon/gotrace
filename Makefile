@@ -58,6 +58,13 @@ test:
 	go test -race ./...
 
 #
+# Benchmarks
+#
+.PHONY: benchmark
+benchmark:
+	go test -bench=. -benchmem ./...
+
+#
 # Clean the world.
 #
 

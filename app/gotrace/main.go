@@ -143,12 +143,12 @@ func worker(workerID int, world *World, wg *sync.WaitGroup, w chan workItem, c c
 func renderLine(world *World, work workItem, c chan processedLine) {
 	colors := make([]Vector3, 0, work.imageWidth)
 	for i := 0; i < work.imageWidth; i++ {
-		rgb := &Vector3{}
+		rgb := Vector3{}
 		for s := 0; s < work.samplesPerPixel; s++ {
 			v := (float64(work.y) + rand.Float64()) / float64(work.imageHeight-1)
 			u := (float64(i) + rand.Float64()) / float64(work.imageWidth-1)
 			ray := world.Camera.GetRay(u, v)
-			rgb.AddAccum(world.Cast(ray, world.MaxDepth))
+			rgb = rgb.Add(world.Cast(ray, world.MaxDepth))
 		}
 		pixelColor := rgb.
 			DivideScalar(float64(work.samplesPerPixel)).
