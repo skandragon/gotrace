@@ -19,7 +19,10 @@ package main
 import "testing"
 
 var (
-	one = Vector3{1, 1, 1}
+	one      = Vector3{1, 1, 1}
+	retVec   Vector3
+	retFloat float64
+	retBool  bool
 )
 
 func BenchmarkAdd(b *testing.B) {
@@ -27,6 +30,7 @@ func BenchmarkAdd(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.Add(one)
 	}
+	retVec = a
 }
 
 func BenchmarkSubtract(b *testing.B) {
@@ -34,6 +38,7 @@ func BenchmarkSubtract(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.Subtract(one)
 	}
+	retVec = a
 }
 
 func BenchmarkMultiply(b *testing.B) {
@@ -41,6 +46,15 @@ func BenchmarkMultiply(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.Multiply(one)
 	}
+	retVec = a
+}
+
+func BenchmarkAddAccum(b *testing.B) {
+	a := &Vector3{}
+	for n := 0; n < b.N; n++ {
+		a = a.AddAccum(one)
+	}
+	retVec = *a
 }
 
 func BenchmarkAddScalar(b *testing.B) {
@@ -48,6 +62,7 @@ func BenchmarkAddScalar(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.AddScalar(1)
 	}
+	retVec = a
 }
 
 func BenchmarkSubtractScalar(b *testing.B) {
@@ -55,6 +70,7 @@ func BenchmarkSubtractScalar(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.SubtractScalar(1)
 	}
+	retVec = a
 }
 
 func BenchmarkMultiplyScalar(b *testing.B) {
@@ -62,6 +78,7 @@ func BenchmarkMultiplyScalar(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.MultiplyScalar(1)
 	}
+	retVec = a
 }
 
 func BenchmarkDivideScalar(b *testing.B) {
@@ -69,4 +86,97 @@ func BenchmarkDivideScalar(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		a = a.DivideScalar(1)
 	}
+	retVec = a
+}
+
+func BenchmarkClamp(b *testing.B) {
+	a := Vector3{3, 3, 3}
+	for n := 0; n < b.N; n++ {
+		a = a.Clamp(0, 9)
+	}
+	retVec = a
+}
+
+func BenchmarkLength(b *testing.B) {
+	a := Vector3{3, 4, 5}
+	len := 0.0
+	for n := 0; n < b.N; n++ {
+		len += a.Length()
+	}
+	retFloat = len
+}
+
+func BenchmarkLengthSquared(b *testing.B) {
+	a := Vector3{3, 4, 5}
+	len := 0.0
+	for n := 0; n < b.N; n++ {
+		len += a.LengthSquared()
+	}
+	retFloat = len
+}
+
+func BenchmarkDot(b *testing.B) {
+	a := Vector3{3, 4, 5}
+	len := 0.0
+	for n := 0; n < b.N; n++ {
+		len += a.Dot(a)
+	}
+	retFloat = len
+}
+
+func BenchmarkCross(b *testing.B) {
+	a := Vector3{3, 4, 5}
+	for n := 0; n < b.N; n++ {
+		a = a.Cross(one)
+	}
+	retVec = a
+}
+
+func BenchmarkNormalize(b *testing.B) {
+	a := Vector3{1, 2, 3}
+	for n := 0; n < b.N; n++ {
+		a = a.Normalize()
+	}
+	retVec = a
+}
+
+func BenchmarkLerp(b *testing.B) {
+	a := Vector3{1000, 2000, 3000}
+	for n := 0; n < b.N; n++ {
+		a = a.Lerp(one, 0.01)
+	}
+	retVec = a
+}
+
+func BenchmarkRandomSphere(b *testing.B) {
+	a := Vector3{}
+	for n := 0; n < b.N; n++ {
+		a = RandomUnitSphere()
+	}
+	retVec = a
+}
+
+func BenchmarkRandomUnitDisk(b *testing.B) {
+	a := Vector3{}
+	for n := 0; n < b.N; n++ {
+		a = RandomUnitDisk()
+	}
+	retVec = a
+}
+
+func BenchmarkRandomVector(b *testing.B) {
+	a := Vector3{}
+	for n := 0; n < b.N; n++ {
+		a = RandomVector()
+	}
+	retVec = a
+}
+
+func BenchmarkNearZeroVector(b *testing.B) {
+	a := Vector3{1e-9, 1e-9, 4}
+	ret := true
+	for n := 0; n < b.N; n++ {
+		ret = NearZeroVector(a)
+	}
+	retBool = ret
 }
