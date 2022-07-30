@@ -49,14 +49,6 @@ func BenchmarkMultiply(b *testing.B) {
 	retVec = a
 }
 
-func BenchmarkAddAccum(b *testing.B) {
-	a := &Vector3{}
-	for n := 0; n < b.N; n++ {
-		a = a.AddAccum(one)
-	}
-	retVec = *a
-}
-
 func BenchmarkAddScalar(b *testing.B) {
 	a := Vector3{}
 	for n := 0; n < b.N; n++ {
