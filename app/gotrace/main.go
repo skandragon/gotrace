@@ -17,6 +17,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	"image/png"
@@ -163,8 +164,23 @@ func renderLine(world *World, work workItem, c chan processedLine) {
 	c <- processedLine{work.y, colors}
 }
 
+var (
+	profileMemory = flag.Bool("profileMemory", false, "enable memory profiling")
+	profileCPU    = flag.Bool("profileCPU", false, "enable CPU profiling")
+)
+
 func main() {
-	defer profile.Start(profile.MemProfile).Stop()
+	flag.Parse()
+
+	if *profileCPU && *profileMemory {
+		log.Fatal("Only one of -profileMemory or -profileCPU can be selected")
+	}
+	if *profileMemory {
+		defer profile.Start(profile.ProfilePath("."), profile.MemProfile).Stop()
+	}
+	if *profileCPU {
+		defer profile.Start(profile.ProfilePath(".")).Stop()
+	}
 
 	log.Println("Version", runtime.Version())
 	log.Println("NumCPU", runtime.NumCPU())
