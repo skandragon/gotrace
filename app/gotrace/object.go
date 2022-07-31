@@ -32,7 +32,7 @@ func (hr *HitRecord) SetFaceNormal(r Ray, outwardNormal Vector3) {
 	if hr.FrontFace {
 		hr.Normal = outwardNormal
 	} else {
-		hr.Normal = outwardNormal.MultiplyScalar(-1)
+		hr.Normal = outwardNormal.Neg()
 	}
 }
 

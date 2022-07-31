@@ -51,7 +51,7 @@ func (m DielectricMaterial) Scatter(r Ray, hr *HitRecord) (bool, Ray, Vector3) {
 		refractionRatio = 1.0 / m.indexOfRefraction
 	}
 	unitDirection := r.Direction.Normalize()
-	cosTheta := math.Min(unitDirection.MultiplyScalar(-1).Dot(hr.Normal), 1.0)
+	cosTheta := math.Min(unitDirection.Neg().Dot(hr.Normal), 1.0)
 	sinTheta := math.Sqrt(1.0 - cosTheta*cosTheta)
 	cannotRefract := refractionRatio*sinTheta > 1.0
 	var direction Vector3

@@ -31,6 +31,11 @@ type Vector3 struct {
 	Z float64
 }
 
+// Neg will invert the signs of each component.
+func (v Vector3) Neg() Vector3 {
+	return Vector3{-v.X, -v.Y, -v.Z}
+}
+
 // Add will add two vectors together.  It will not modify
 // either the source or "o" vector.
 func (v Vector3) Add(o Vector3) Vector3 {

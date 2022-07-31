@@ -28,6 +28,14 @@ var (
 	retBool  bool
 )
 
+func BenchmarkNeg(b *testing.B) {
+	a := Vector3{}
+	for n := 0; n < b.N; n++ {
+		a = a.Neg()
+	}
+	retVec = a
+}
+
 func BenchmarkAdd(b *testing.B) {
 	a := Vector3{}
 	for n := 0; n < b.N; n++ {
