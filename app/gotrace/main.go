@@ -60,7 +60,7 @@ var (
 
 	r = math.Cos(math.Pi / 4)
 
-	world = &World{
+	world = World{
 		Camera:   NewCamera(lookFrom, lookAt, vup, 20, aspectRatio, 0.1, 10),
 		TMin:     0.001,
 		TMax:     math.MaxFloat64,
@@ -133,7 +133,7 @@ func absorbLines(im *image.RGBA, samples int, c chan processedLine) {
 	}
 }
 
-func worker(workerID int, world *World, wg *sync.WaitGroup, w chan workItem, c chan processedLine) {
+func worker(workerID int, world World, wg *sync.WaitGroup, w chan workItem, c chan processedLine) {
 	defer wg.Done()
 	log.Printf("Worker %d starting...", workerID)
 	for work := range w {
@@ -142,7 +142,7 @@ func worker(workerID int, world *World, wg *sync.WaitGroup, w chan workItem, c c
 	log.Printf("Worker %d ended.", workerID)
 }
 
-func renderLine(world *World, work workItem, c chan processedLine) {
+func renderLine(world World, work workItem, c chan processedLine) {
 	colors := make([]Vector3, 0, work.imageWidth)
 	for i := 0; i < work.imageWidth; i++ {
 		rgb := Vector3{}
@@ -166,7 +166,7 @@ func renderLine(world *World, work workItem, c chan processedLine) {
 var (
 	profileMemory = flag.Bool("profileMemory", false, "enable memory profiling")
 	profileCPU    = flag.Bool("profileCPU", false, "enable CPU profiling")
-	nCPU = flag.Int("ncpu", runtime.NumCPU(), "Number of CPU cores to run on")
+	nCPU          = flag.Int("ncpu", runtime.NumCPU(), "Number of CPU cores to run on")
 )
 
 func main() {
@@ -182,11 +182,11 @@ func main() {
 		defer profile.Start(profile.ProfilePath(".")).Stop()
 	}
 
-	log.Println("NumCPU ", *nCPU)
+	log.Println("NumCPU", *nCPU)
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
-	resultChan := make(chan processedLine)
+	resultChan := make(chan processedLine, imageHeight)
 	workChan := make(chan workItem, imageHeight)
 	wg := sync.WaitGroup{}
 	for i := 0; i < *nCPU; i++ {
