@@ -25,6 +25,5 @@ type Ray struct {
 // Point returns the point the ray points to.
 func (r Ray) Point(t float64) Vector3 {
 	b := r.Direction.MultiplyScalar(t)
-	a := r.Origin
-	return a.Add(b)
+	return r.Origin.Add(b)
 }
