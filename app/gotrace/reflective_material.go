@@ -30,12 +30,12 @@ func NewReflectiveMaterial(color Vector3, fuzz float64) ReflectiveMaterial {
 
 // Scatter calculates how rays should scatter from this material.
 func (m ReflectiveMaterial) Scatter(r Ray, hr *HitRecord) (bool, Ray, Vector3) {
-	reflected := reflect(r.Direction.Normalize(), hr.Normal).
+	reflected := reflectRay(r.Direction.Normalize(), hr.Normal).
 		Add(RandomUnitSphere().MultiplyScalar(m.fuzz))
 	scattered := Ray{hr.P, reflected}
 	return scattered.Direction.Dot(hr.Normal) > 0, scattered, m.albedo
 }
 
-func reflect(v Vector3, n Vector3) Vector3 {
+func reflectRay(v Vector3, n Vector3) Vector3 {
 	return v.Subtract(n.MultiplyScalar(v.Dot(n) * 2))
 }

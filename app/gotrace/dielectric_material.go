@@ -56,7 +56,7 @@ func (m DielectricMaterial) Scatter(r Ray, hr *HitRecord) (bool, Ray, Vector3) {
 	cannotRefract := refractionRatio*sinTheta > 1.0
 	var direction Vector3
 	if cannotRefract || reflectance(cosTheta, refractionRatio) > rand.Float64() {
-		direction = reflect(unitDirection, hr.Normal)
+		direction = reflectRay(unitDirection, hr.Normal)
 	} else {
 		direction = refract(unitDirection, hr.Normal, refractionRatio, cosTheta)
 	}

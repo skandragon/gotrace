@@ -16,7 +16,10 @@
 
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 var (
 	one      = Vector3{1, 1, 1}
@@ -171,4 +174,73 @@ func BenchmarkNearZeroVector(b *testing.B) {
 		ret = NearZeroVector(a)
 	}
 	retBool = ret
+}
+
+func TestVector3_Add(t *testing.T) {
+	tests := []struct {
+		name  string
+		vec   Vector3
+		other Vector3
+		want  Vector3
+	}{
+		{
+			"add",
+			Vector3{-1, 0, 1},
+			Vector3{2, 1, -2},
+			Vector3{1, 1, -1},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.vec.Add(tt.other); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Vector3.Add() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVector3_Subtract(t *testing.T) {
+	tests := []struct {
+		name  string
+		vec   Vector3
+		other Vector3
+		want  Vector3
+	}{
+		{
+			"subtract",
+			Vector3{-1, 0, 1},
+			Vector3{2, 1, -2},
+			Vector3{-3, -1, 3},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.vec.Subtract(tt.other); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Vector3.Subtract() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVector3_Multiply(t *testing.T) {
+	tests := []struct {
+		name  string
+		vec   Vector3
+		other Vector3
+		want  Vector3
+	}{
+		{
+			"multiply",
+			Vector3{-1, 0, 1},
+			Vector3{2, 1, -2},
+			Vector3{-2, 0, -2},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.vec.Multiply(tt.other); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Vector3.Multiply() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
