@@ -136,7 +136,6 @@ func absorbLines(im *image.RGBA, samples int, c chan processedLine) {
 func worker(workerID int, world *World, wg *sync.WaitGroup, w chan workItem, c chan processedLine) {
 	defer wg.Done()
 	log.Printf("Worker %d starting...", workerID)
-
 	for work := range w {
 		renderLine(world, work, c)
 	}
@@ -167,6 +166,7 @@ func renderLine(world *World, work workItem, c chan processedLine) {
 var (
 	profileMemory = flag.Bool("profileMemory", false, "enable memory profiling")
 	profileCPU    = flag.Bool("profileCPU", false, "enable CPU profiling")
+	nCPU = flag.Int("ncpu", runtime.NumCPU(), "Number of CPU cores to run on")
 )
 
 func main() {
@@ -182,15 +182,14 @@ func main() {
 		defer profile.Start(profile.ProfilePath(".")).Stop()
 	}
 
-	log.Println("Version", runtime.Version())
-	log.Println("NumCPU", runtime.NumCPU())
+	log.Println("NumCPU ", *nCPU)
 
 	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
 	resultChan := make(chan processedLine)
 	workChan := make(chan workItem, imageHeight)
 	wg := sync.WaitGroup{}
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < *nCPU; i++ {
 		wg.Add(1)
 		go worker(i, world, &wg, workChan, resultChan)
 	}
