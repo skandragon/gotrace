@@ -21,9 +21,9 @@ type LambertianMaterial struct {
 	albedo Vector3
 }
 
-// NewLamtertianMaterial returns a new material with the provided
+// NewLambertianMaterial returns a new material with the provided
 // color.
-func NewLamtertianMaterial(color Vector3) LambertianMaterial {
+func NewLambertianMaterial(color Vector3) LambertianMaterial {
 	return LambertianMaterial{albedo: color}
 }
 

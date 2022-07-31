@@ -26,6 +26,8 @@ import (
 	"os"
 	"runtime"
 	"sync"
+
+	"github.com/pkg/profile"
 )
 
 func check(e error, s string) {
@@ -69,7 +71,7 @@ var (
 func makeObjects() []Object {
 	objects := []Object{}
 
-	materialGround := NewLamtertianMaterial(Vector3{0.5, 0.5, 0.5})
+	materialGround := NewLambertianMaterial(Vector3{0.5, 0.5, 0.5})
 	objects = append(objects, Sphere{Vector3{0, -1000, 0}, 1000, materialGround})
 
 	for a := -11; a < 11; a++ {
@@ -84,7 +86,7 @@ func makeObjects() []Object {
 				var sphereMaterial Material
 				if chooseMat < 0.8 {
 					albedo := RandomVector().Multiply(RandomVector())
-					sphereMaterial = NewLamtertianMaterial(albedo)
+					sphereMaterial = NewLambertianMaterial(albedo)
 				} else if chooseMat < 0.95 {
 					albedo := RandomVector().MultiplyScalar(0.5).AddScalar(0.5)
 					fuzz := rand.Float64() * 0.5
@@ -100,7 +102,7 @@ func makeObjects() []Object {
 	material1 := NewDielectricMaterial(1.5)
 	objects = append(objects, Sphere{Vector3{0, 1, 0}, 1.0, material1})
 
-	material2 := NewLamtertianMaterial(Vector3{0.4, 0.2, 0.1})
+	material2 := NewLambertianMaterial(Vector3{0.4, 0.2, 0.1})
 	objects = append(objects, Sphere{Vector3{-4, 1, 0}, 1.0, material2})
 
 	material3 := NewReflectiveMaterial(Vector3{0.7, 0.6, 0.5}, 0.0)
@@ -162,6 +164,8 @@ func renderLine(world *World, work workItem, c chan processedLine) {
 }
 
 func main() {
+	defer profile.Start(profile.MemProfile).Stop()
+
 	log.Println("Version", runtime.Version())
 	log.Println("NumCPU", runtime.NumCPU())
 

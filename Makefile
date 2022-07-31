@@ -47,7 +47,7 @@ local: $(addprefix bin/,$(BINARIES))
 
 bin/%:: ${all_deps}
 	@[ -d bin ] || mkdir bin
-	go build -ldflags="-s -w" -o $@ app/$(@F)/*.go
+	go build -gcflags -m -o $@ app/$(@F)/*.go
 
 #
 # Test targets
