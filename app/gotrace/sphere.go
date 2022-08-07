@@ -43,9 +43,9 @@ func (s Sphere) Hit(r Ray, tMin float64, tMax float64) *HitRecord {
 	root := (-bHalf - sqrtd) / a
 	if root < tMin || root > tMax {
 		root = (-bHalf + sqrtd) / a
-	}
-	if root < tMin || root > tMax {
-		return nil
+		if root < tMin || root > tMax {
+			return nil
+		}
 	}
 
 	hitPoint := r.Point(root)

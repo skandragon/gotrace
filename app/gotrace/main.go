@@ -38,7 +38,7 @@ func check(e error, s string) {
 	}
 }
 
-func setPixel(im *image.RGBA, samples int, x int, y int, color Vector3) {
+func setPixel(im *image.NRGBA, samples int, x int, y int, color Vector3) {
 	pixelOffset := (im.Rect.Dy()-y-1)*im.Stride + x*4
 	im.Pix[pixelOffset] = uint8(color.X)
 	im.Pix[pixelOffset+1] = uint8(color.Y)
@@ -124,7 +124,7 @@ type workItem struct {
 	samplesPerPixel int
 }
 
-func absorbLines(im *image.RGBA, samples int, c chan processedLine) {
+func absorbLines(im *image.NRGBA, samples int, c chan processedLine) {
 	for line := range c {
 		log.Printf("Line %d of %d", line.y, imageHeight)
 		for x, color := range line.colors {
@@ -184,7 +184,7 @@ func main() {
 
 	log.Println("NumCPU", *nCPU)
 
-	im := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
+	im := image.NewNRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 
 	resultChan := make(chan processedLine, imageHeight)
 	workChan := make(chan workItem, imageHeight)

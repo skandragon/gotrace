@@ -19,8 +19,6 @@ package main
 import (
 	"math"
 	"math/rand"
-
-	"golang.org/x/exp/constraints"
 )
 
 // Vector3 holds the X, Y, and Z components of a 3-dimensional
@@ -89,7 +87,7 @@ func (v Vector3) Lerp(o Vector3, t float64) Vector3 {
 	}
 }
 
-func clamp[T constraints.Ordered](x, min, max T) T {
+func clamp(x, min, max float64) float64 {
 	if x < min {
 		return min
 	}
