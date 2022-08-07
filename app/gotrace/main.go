@@ -38,14 +38,6 @@ func check(e error, s string) {
 	}
 }
 
-func setPixel(im *image.NRGBA, samples int, x int, y int, color Vector3) {
-	pixelOffset := (im.Rect.Dy()-y-1)*im.Stride + x*4
-	im.Pix[pixelOffset] = uint8(color.X)
-	im.Pix[pixelOffset+1] = uint8(color.Y)
-	im.Pix[pixelOffset+2] = uint8(color.Z)
-	im.Pix[pixelOffset+3] = 0xff
-}
-
 const (
 	aspectRatio     = 16.0 / 9.0
 	imageWidth      = 1200
@@ -124,11 +116,20 @@ type workItem struct {
 	samplesPerPixel int
 }
 
-func absorbLines(im *image.NRGBA, samples int, c chan processedLine) {
+func absorbLines(im *image.NRGBA, c chan processedLine) {
 	for line := range c {
 		log.Printf("Line %d of %d", line.y, imageHeight)
-		for x, color := range line.colors {
-			setPixel(im, samples, x, line.y, color)
+		y := im.Rect.Dy() - line.y - 1
+		pixelOffset := (y-im.Rect.Min.Y)*im.Stride + (-im.Rect.Min.X)*4
+		for _, color := range line.colors {
+			im.Pix[pixelOffset] = uint8(color.X)
+			pixelOffset++
+			im.Pix[pixelOffset] = uint8(color.Y)
+			pixelOffset++
+			im.Pix[pixelOffset] = uint8(color.Z)
+			pixelOffset++
+			im.Pix[pixelOffset] = 0xff
+			pixelOffset++
 		}
 	}
 }
@@ -194,7 +195,7 @@ func main() {
 		go worker(i, world, &wg, workChan, resultChan)
 	}
 
-	go absorbLines(im, samplesPerPixel, resultChan)
+	go absorbLines(im, resultChan)
 	for j := 0; j < imageHeight; j++ {
 		workChan <- workItem{j, imageHeight, imageWidth, samplesPerPixel}
 	}
