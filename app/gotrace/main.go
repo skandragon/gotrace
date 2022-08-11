@@ -65,7 +65,7 @@ func makeObjects() []Hittable {
 	objects := []Hittable{}
 
 	materialGround := NewLambertianMaterial(Vector3{0.5, 0.5, 0.5})
-	objects = append(objects, Sphere{Vector3{0, -1000, 0}, 1000, materialGround})
+	objects = append(objects, NewSphere(Vector3{0, -1000, 0}, 1000, materialGround))
 
 	for a := -11; a < 11; a++ {
 		for b := -11; b < 11; b++ {
@@ -83,29 +83,29 @@ func makeObjects() []Hittable {
 						center2 := center.Add(Vector3{0, rand.Float64() * 0.25, 0})
 						objects = append(objects, NewMovingSphere(center, center2, 0.0, 1.0, 0.2, sphereMaterial))
 					} else {
-						objects = append(objects, Sphere{center, 0.2, sphereMaterial})
+						objects = append(objects, NewSphere(center, 0.2, sphereMaterial))
 					}
 				} else if chooseMat < 0.95 {
 					albedo := RandomVector().MultiplyScalar(0.5).AddScalar(0.5)
 					fuzz := rand.Float64() * 0.5
 					sphereMaterial := NewReflectiveMaterial(albedo, fuzz)
-					objects = append(objects, Sphere{center, 0.2, sphereMaterial})
+					objects = append(objects, NewSphere(center, 0.2, sphereMaterial))
 				} else {
 					sphereMaterial := NewDielectricMaterial(1.5)
-					objects = append(objects, Sphere{center, 0.2, sphereMaterial})
+					objects = append(objects, NewSphere(center, 0.2, sphereMaterial))
 				}
 			}
 		}
 	}
 
 	material1 := NewDielectricMaterial(1.5)
-	objects = append(objects, Sphere{Vector3{0, 1, 0}, 1.0, material1})
+	objects = append(objects, NewSphere(Vector3{0, 1, 0}, 1.0, material1))
 
 	material2 := NewLambertianMaterial(Vector3{0.4, 0.2, 0.1})
-	objects = append(objects, Sphere{Vector3{-4, 1, 0}, 1.0, material2})
+	objects = append(objects, NewSphere(Vector3{-4, 1, 0}, 1.0, material2))
 
 	material3 := NewReflectiveMaterial(Vector3{0.7, 0.6, 0.5}, 0.0)
-	objects = append(objects, Sphere{Vector3{4, 1, 0}, 1.0, material3})
+	objects = append(objects, NewSphere(Vector3{4, 1, 0}, 1.0, material3))
 
 	return objects
 }

@@ -48,7 +48,6 @@ func (s movingSphere) center(t float64) Vector3 {
 	return s.Center0.Add(s.midcenter.MultiplyScalar(tt))
 }
 
-// Hit calculates the hit of a sphere.
 func (s movingSphere) Hit(r Ray, tMin float64, tMax float64) *HitRecord {
 	oct := s.center(r.Time)
 	oc := r.Origin.Subtract(oct)

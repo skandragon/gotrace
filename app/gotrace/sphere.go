@@ -20,15 +20,22 @@ import (
 	"math"
 )
 
-// Sphere defines a sphere.
-type Sphere struct {
+type sphere struct {
 	Center   Vector3
 	Radius   float64
 	Material Material
 }
 
-// Hit calculates the hit of a sphere.
-func (s Sphere) Hit(r Ray, tMin float64, tMax float64) *HitRecord {
+// NewSphere returns a new sphere.
+func NewSphere(c Vector3, r float64, mat Material) Hittable {
+	return sphere{
+		Center:   c,
+		Radius:   r,
+		Material: mat,
+	}
+}
+
+func (s sphere) Hit(r Ray, tMin float64, tMax float64) *HitRecord {
 	oc := r.Origin.Subtract(s.Center)
 	a := r.Direction.LengthSquared()
 	bHalf := oc.Dot(r.Direction)
