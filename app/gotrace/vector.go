@@ -152,8 +152,9 @@ func RandomUnitSphere() Vector3 {
 			Y: rand.Float64()*2 - 1.0,
 			Z: rand.Float64()*2 - 1.0,
 		}
-		if p.LengthSquared() < 1 {
-			return p.Normalize()
+		length := p.LengthSquared()
+		if length < 1 {
+			return p.DivideScalar(math.Sqrt(length))
 		}
 	}
 }
@@ -167,8 +168,9 @@ func RandomUnitDisk() Vector3 {
 			Y: rand.Float64()*2 - 1.0,
 			Z: 0,
 		}
-		if p.LengthSquared() < 1 {
-			return p
+		length := p.LengthSquared()
+		if length < 1 {
+			return p.DivideScalar(math.Sqrt(length))
 		}
 	}
 }
