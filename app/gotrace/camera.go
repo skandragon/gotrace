@@ -16,7 +16,10 @@
 
 package main
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 // Camera defines how we see the world.
 type Camera struct {
@@ -24,6 +27,8 @@ type Camera struct {
 	ViewportWidth   float64
 	FocalLength     float64
 	LensRadius      float64
+	Time0           float64
+	Time1           float64
 	origin          Vector3
 	lowerLeftCorner Vector3
 	horizontal      Vector3
@@ -33,10 +38,12 @@ type Camera struct {
 
 // NewCamera returns a new Camera with the given aspect ratio.
 // Other things are hard-coded currently.
-func NewCamera(lookFrom Vector3, lookAt Vector3, vup Vector3, fieldOfView float64, aspectRatio float64, aperture float64, focalLength float64) Camera {
+func NewCamera(lookFrom Vector3, lookAt Vector3, vup Vector3, fieldOfView float64, aspectRatio float64, aperture float64, focalLength float64, time0 float64, time1 float64) Camera {
 	ret := Camera{
 		FocalLength: focalLength,
 		LensRadius:  aperture / 2,
+		Time0:       time0,
+		Time1:       time1,
 		origin:      lookFrom,
 	}
 
@@ -58,6 +65,11 @@ func NewCamera(lookFrom Vector3, lookAt Vector3, vup Vector3, fieldOfView float6
 	return ret
 }
 
+func randomBetween(a, b float64) float64 {
+	r := b - a
+	return a + rand.Float64()*r
+}
+
 // GetRay returns a ray from the camera's origin, pointing in the
 // specified direction calculated by u, v.
 func (c Camera) GetRay(s float64, t float64) Ray {
@@ -68,5 +80,5 @@ func (c Camera) GetRay(s float64, t float64) Ray {
 		Add(c.vertical.MultiplyScalar(t)).
 		Subtract(c.origin).
 		Subtract(offset)
-	return Ray{c.origin.Add(offset), direction}
+	return Ray{c.origin.Add(offset), direction, randomBetween(c.Time0, c.Time1)}
 }

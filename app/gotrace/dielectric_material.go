@@ -60,5 +60,5 @@ func (m DielectricMaterial) Scatter(r Ray, hr *HitRecord) (bool, Ray, Vector3) {
 	} else {
 		direction = refract(unitDirection, hr.Normal, refractionRatio, cosTheta)
 	}
-	return true, Ray{hr.P, direction}, Vector3{1, 1, 1}
+	return true, Ray{hr.P, direction, r.Time}, Vector3{1, 1, 1}
 }

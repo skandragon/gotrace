@@ -33,5 +33,5 @@ func (m LambertianMaterial) Scatter(r Ray, hr *HitRecord) (bool, Ray, Vector3) {
 	if NearZeroVector(scatterDirection) {
 		scatterDirection = hr.Normal
 	}
-	return true, Ray{hr.P, scatterDirection}, m.albedo
+	return true, Ray{hr.P, scatterDirection, r.Time}, m.albedo
 }

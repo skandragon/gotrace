@@ -20,6 +20,7 @@ package main
 type Ray struct {
 	Origin    Vector3
 	Direction Vector3
+	Time      float64
 }
 
 // Point returns the point the ray points to.

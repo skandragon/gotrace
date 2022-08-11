@@ -53,7 +53,7 @@ var (
 	r = math.Cos(math.Pi / 4)
 
 	world = World{
-		Camera:   NewCamera(lookFrom, lookAt, vup, 20, aspectRatio, 0.1, 10),
+		Camera:   NewCamera(lookFrom, lookAt, vup, 20, aspectRatio, 0.1, 10, 0.0, 1.0),
 		TMin:     0.001,
 		TMax:     math.MaxFloat64,
 		MaxDepth: 500,
@@ -76,18 +76,24 @@ func makeObjects() []Hittable {
 				float64(b) + 0.9*rand.Float64(),
 			}
 			if center.Subtract(Vector3{4, 0.2, 0}).Length() > 0.9 {
-				var sphereMaterial Material
 				if chooseMat < 0.8 {
 					albedo := RandomVector().Multiply(RandomVector())
-					sphereMaterial = NewLambertianMaterial(albedo)
+					sphereMaterial := NewLambertianMaterial(albedo)
+					if rand.Float64() < 0.25 {
+						center2 := center.Add(Vector3{0, rand.Float64() * 0.25, 0})
+						objects = append(objects, NewMovingSphere(center, center2, 0.0, 1.0, 0.2, sphereMaterial))
+					} else {
+						objects = append(objects, Sphere{center, 0.2, sphereMaterial})
+					}
 				} else if chooseMat < 0.95 {
 					albedo := RandomVector().MultiplyScalar(0.5).AddScalar(0.5)
 					fuzz := rand.Float64() * 0.5
-					sphereMaterial = NewReflectiveMaterial(albedo, fuzz)
+					sphereMaterial := NewReflectiveMaterial(albedo, fuzz)
+					objects = append(objects, Sphere{center, 0.2, sphereMaterial})
 				} else {
-					sphereMaterial = NewDielectricMaterial(1.5)
+					sphereMaterial := NewDielectricMaterial(1.5)
+					objects = append(objects, Sphere{center, 0.2, sphereMaterial})
 				}
-				objects = append(objects, Sphere{center, 0.2, sphereMaterial})
 			}
 		}
 	}
