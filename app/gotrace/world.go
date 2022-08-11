@@ -19,7 +19,7 @@ package main
 // World defines our massive world.
 type World struct {
 	Camera   Camera
-	Objects  []Object
+	Objects  []Hittable
 	MaxDepth int
 	TMin     float64
 	TMax     float64

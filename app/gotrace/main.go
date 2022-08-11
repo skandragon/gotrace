@@ -61,8 +61,8 @@ var (
 	}
 )
 
-func makeObjects() []Object {
-	objects := []Object{}
+func makeObjects() []Hittable {
+	objects := []Hittable{}
 
 	materialGround := NewLambertianMaterial(Vector3{0.5, 0.5, 0.5})
 	objects = append(objects, Sphere{Vector3{0, -1000, 0}, 1000, materialGround})
